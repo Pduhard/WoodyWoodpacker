@@ -41,6 +41,7 @@ int check_file_info(void *file, t_data *data)
     return (ft_return_error(CHECK_BAD, "error: %s: %s: File architecture not suported. x86_64 only\n", data->bin_name, data->file_name));
   data->real_entry_point = data->elf_hdr->e_entry;
   data->file_start = file;
+  printf("byte order %d\n", byte_order);
   return (1);
 }
 
@@ -55,7 +56,7 @@ int main(int argc, char **argv)
   data.file_name = argv[1];
   if (!(file = mmap_file(data.bin_name, data.file_name, &data.file_size)) || check_file_info(file, &data) == CHECK_BAD)
     return (EXIT_FAILURE);
-  if (!modify_segment_header(&data))
+  if (!modify_segments_header(&data) || !modify_sections_header(&data))
     return (EXIT_FAILURE);
 
   ft_throw_error("salut %d\n", 10);

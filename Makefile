@@ -36,7 +36,8 @@ LIB_PATH	=	./libft/
 
 SRC		=		main.c		\
 					error.c		\
-					segment.c				
+					segment.c	\
+					section.c					
 
 BIN			=	$(SRC:.c=.o)
 
