@@ -17,7 +17,7 @@ void *mmap_file(char *bin_name, char *file_name, off_t *file_size)
   {
     dprintf(2, "error: %s: empty file: %s\n", bin_name, file_name);
   }
-  if (*file_size && (mapped_file = mmap(NULL, stat_buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
+  if (*file_size && (mapped_file = mmap(NULL, stat_buf.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
   {
     dprintf(2, "error: %s: can't map file: %s\n", bin_name, file_name);
     return (NULL);
@@ -28,17 +28,19 @@ void *mmap_file(char *bin_name, char *file_name, off_t *file_size)
 
 int check_file_info(void *file, t_data *data)
 {
-  Elf64_Ehdr    *elf_hdr;
+  // Elf64_Ehdr    *elf_hdr;
   int           class;
   int           byte_order;
 
-  elf_hdr = (Elf64_Ehdr *)file;
-  if (ft_strncmp((char *)elf_hdr, ELFMAG, SELFMAG))
+  data->elf_hdr = (Elf64_Ehdr *)file;
+  if (ft_strncmp((char *)data->elf_hdr, ELFMAG, SELFMAG))
     return (ft_return_error(CHECK_BAD, "error: %s: %s: Not an elf file\n", data->bin_name, data->file_name));
-  class = ((char *)elf_hdr)[EI_CLASS];
-  byte_order = ((char *)elf_hdr)[EI_DATA];
+  class = ((char *)data->elf_hdr)[EI_CLASS];
+  byte_order = ((char *)data->elf_hdr)[EI_DATA];
   if (class != ELFCLASS64)
     return (ft_return_error(CHECK_BAD, "error: %s: %s: File architecture not suported. x86_64 only\n", data->bin_name, data->file_name));
+  data->real_entry_point = data->elf_hdr->e_entry;
+  data->file_start = file;
   return (1);
 }
 
@@ -52,6 +54,8 @@ int main(int argc, char **argv)
   data.bin_name = argv[0];
   data.file_name = argv[1];
   if (!(file = mmap_file(data.bin_name, data.file_name, &data.file_size)) || check_file_info(file, &data) == CHECK_BAD)
+    return (EXIT_FAILURE);
+  if (!modify_segment_header(&data))
     return (EXIT_FAILURE);
 
   ft_throw_error("salut %d\n", 10);

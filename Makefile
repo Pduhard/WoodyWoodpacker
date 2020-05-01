@@ -35,7 +35,8 @@ BIN_PATH	=	./bins/
 LIB_PATH	=	./libft/
 
 SRC		=		main.c		\
-					error.c						
+					error.c		\
+					segment.c				
 
 BIN			=	$(SRC:.c=.o)
 
