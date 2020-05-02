@@ -16,7 +16,9 @@
 NAME		=	woody_woodpacker
 
 CC			=	gcc
-FLAGS		=	-g -Wall -Werror -Wextra -O3 -ffast-math -march=native -flto
+NASM		= ./nasm
+CFLAGS	= -Wall -Werror -Wextra -O3 -ffast-math -march=native -flto
+SFLAGS	=	-f elf64 -O3
 LIB_FLAGS	=	-L $(LIB_PATH) $(LIB_FLAG)
 INC_DIR	=	./includes/
 INCLUDES	=	woody_woodpacker.h
@@ -37,15 +39,20 @@ LIB_PATH	=	./libft/
 SRC		=		main.c		\
 					error.c		\
 					segment.c	\
-					section.c					
+					section.c	\
+					write.c		
+
+ASM_SRC	= unpack.s	\
 
 BIN			=	$(SRC:.c=.o)
+ASM_BIN = $(ASM_SRC:.s=.o)
 
 LIB_FLAG			=	-lft
 LIB						=	libft.a
 
 BINS				=	$(addprefix $(BIN_PATH), $(BIN))
-LIBS					=	$(addprefix $(LIB_PATH), $(LIB))
+ASM_BINS		= $(addprefix $(BIN_PATH), $(ASM_BIN))
+LIBS				=	$(addprefix $(LIB_PATH), $(LIB))
 INCS				= $(addprefix $(INC_DIR), $(INCLUDES))
 
 .PHONY: all clean fclean re lib libft
@@ -65,7 +72,7 @@ libft: $(LIBS)
 
 $(NAME): $(LIBS) $(BINS)
 
-	@$(CC) -I $(INC_DIR) $(FLAGS) $(LIB_FLAGS) $^ -o $@
+	@$(CC) -I $(INC_DIR) $(CFLAGS) $(LIB_FLAGS) $^ -o $@
 	@echo "\n\n$(B)[EXECUTABLE \"$(NAME)\" READY]\n"
 
 make_libft:
@@ -79,7 +86,12 @@ $(LIBS):
 $(BIN_PATH)%.o: $(SRC_PATH)%.c $(INCS)
 
 	@mkdir -p $(BIN_PATH) || true
-	@$(CC) $(FLAGS) -I $(INC_DIR) -o $@ -c $< && echo "${G} \c"
+	@$(CC) $(CFLAGS) -I $(INC_DIR) -o $@ -c $< && echo "${G} \c"
+
+$(BIN_PATH)%.o: $(SRC_PATH)%.s $(INCS)
+
+	@mkdir -p $(BIN_PATH) || true
+	@$(NASM) $(SFLAGS) -I $(INC_DIR) -o $@ $< && echo "${G} \c"
 
 clean:
 
