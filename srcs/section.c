@@ -14,7 +14,7 @@ Elf64_Shdr create_new_section(t_data *data, Elf64_Shdr *p_sect, Elf64_Off file_o
   sect.sh_addr = p_sect ? p_sect->sh_addr + p_sect->sh_size : 0;
   // sect.sh_offset = p_sect ? p_sect->v_addr + p_sect->sh_size : 0;
   sect.sh_offset = file_offset;
-  sect.sh_size = injection_size;
+  sect.sh_size = injection_size + 5;
   (void)data;
   return (sect);
 }
@@ -60,7 +60,7 @@ int modify_sections_header(t_data *data)
     }
 
     // if (shdr[i].sh_offset + sh_size)
-    // printf("shdr[%d] %llx : %s type %d %08llx + %llx size = %llx off\n", i, shdr[i].sh_addr, str_tab + shdr[i].sh_name, shdr[i].sh_type, shdr[i].sh_offset, shdr[i].sh_size, shdr[i].sh_offset + shdr[i].sh_size);
+    printf("shdr[%d] %llx : %s type %d %08llx + %llx size = %llx off\n", i, shdr[i].sh_addr, str_tab + shdr[i].sh_name, shdr[i].sh_type, shdr[i].sh_offset, shdr[i].sh_size, shdr[i].sh_offset + shdr[i].sh_size);
     i++;
   }
   if (last_sect < 1)
