@@ -130,7 +130,10 @@ void write_new_exe(t_data *data)
   write(fd, injection, injection_size);
   char jmp = 0xe9;
   write(fd, &jmp, 1);
-  write(fd, (char *)&jump, 4);
+  write(fd, ((char *)&jump) + 3, 1);
+  write(fd, ((char *)&jump) + 2, 1);
+  write(fd, ((char *)&jump) + 1, 1);
+  write(fd, ((char *)&jump), 1);
   i++;
   size += injection_size + 5;
   while (i < data->elf_hdr->e_shnum)
