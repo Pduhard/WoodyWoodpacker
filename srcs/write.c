@@ -86,7 +86,7 @@ void write_padding(int fd, int *size, int pad_to)
   char *padding;
 
   printf("%x == %x ?. \n", *size, pad_to);
-  if (*size == pad_to)
+  if (*size >= pad_to)
     return ;
   else
     padding = ft_strnew(pad_to - *size);
@@ -116,7 +116,7 @@ void write_new_exe(t_data *data)
   size += sizeof(Elf64_Ehdr);
   write_padding(fd, &size, data->elf_hdr->e_phoff);
   size += data->elf_hdr->e_phentsize * data->elf_hdr->e_phnum;
-
+  printf(" size after phdr %x\n", size);
   write(fd, data->file_start + data->elf_hdr->e_phoff, data->elf_hdr->e_phentsize * data->elf_hdr->e_phnum);
   int i = 0;
   while (data->new_shdr + i != data->new_section)
@@ -143,6 +143,7 @@ void write_new_exe(t_data *data)
   write_padding(fd, &size, data->elf_hdr->e_shoff);
   write(fd, data->new_shdr, data->elf_hdr->e_shentsize * data->elf_hdr->e_shnum);
   size += data->elf_hdr->e_shentsize * data->elf_hdr->e_shnum;
+
 }
 
 void zdwrite_new_exe(t_data *data)

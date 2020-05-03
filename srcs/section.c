@@ -41,7 +41,7 @@ int modify_sections_header(t_data *data)
   printf("end_off_iseg %llx\n", end_off_iseg);
   while (i < data->elf_hdr->e_shnum)
   {
-    // printf("ah %llx\n", shdr[i].sh_offset);
+    printf("ah %llx\n", shdr[i].sh_offset);
     // if (!strcmp(str_tab + shdr[i].sh_name, SECT_TO_ENCRYPT))
     //   data->encrypt = &(shdr[i]);
     if ((long long)(end_off_iseg - shdr[i].sh_offset - shdr[i].sh_size) >= 0)// before injection, Check for last section
