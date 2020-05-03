@@ -97,6 +97,56 @@ void write_padding(int fd, int *size, int pad_to)
 
 void write_new_exe(t_data *data)
 {
+  int fd;
+  int size;
+  int jump = (int)(data->real_entry_point - data->new_section->sh_addr - injection_size);
+  Elf64_Shdr *old_shdr = data->file_start + data->elf_hdr->e_shoff;
+
+  size = 0;
+  if ((fd = open("woody", O_RDWR | O_CREAT | O_TRUNC, 0755)) == -1)
+  {
+    ft_throw_error("Can't open file: woody\n");
+    return ;
+  }
+  data->pt_load_inject_in->p_memsz += injection_size + 5;
+  data->elf_hdr->e_entry = data->new_section->sh_addr;
+  modify_offset(data);
+  data->elf_hdr->e_shoff = data->new_shdr[data->elf_hdr->e_shnum - 1].sh_offset + data->new_shdr[data->elf_hdr->e_shnum - 1].sh_size;
+  write(fd, data->elf_hdr, sizeof(Elf64_Ehdr));
+  size += sizeof(Elf64_Ehdr);
+  write_padding(fd, &size, data->elf_hdr->e_phoff);
+  size += data->elf_hdr->e_phentsize * data->elf_hdr->e_phnum;
+
+  write(fd, data->file_start + data->elf_hdr->e_phoff, data->elf_hdr->e_phentsize * data->elf_hdr->e_phnum);
+  int i = 0;
+  while (data->new_shdr + i != data->new_section)
+  {
+    write_padding(fd, &size, data->new_shdr[i].sh_offset);
+    write(fd, data->file_start + data->new_shdr[i].sh_offset, data->new_shdr[i].sh_size);
+    size += data->new_shdr[i].sh_size;
+    i++;
+  }
+  write_padding(fd, &size, data->new_section->sh_offset);
+  write(fd, injection, injection_size);
+  char jmp = 0xe9;
+  write(fd, &jmp, 1);
+  write(fd, (char *)&jump, 4);
+  i++;
+  size += injection_size + 5;
+  while (i < data->elf_hdr->e_shnum)
+  {
+    write_padding(fd, &size, data->new_shdr[i].sh_offset);
+    write(fd, data->file_start + old_shdr[i - 1].sh_offset, data->new_shdr[i].sh_size);
+    size += data->new_shdr[i].sh_size;
+    i++;
+  }
+  write_padding(fd, &size, data->elf_hdr->e_shoff);
+  write(fd, data->new_shdr, data->elf_hdr->e_shentsize * data->elf_hdr->e_shnum);
+  size += data->elf_hdr->e_shentsize * data->elf_hdr->e_shnum;
+}
+
+void zdwrite_new_exe(t_data *data)
+{
     int fd;
     int size;
     int jump = (int)(data->real_entry_point - data->new_section->sh_addr - injection_size);
@@ -109,12 +159,13 @@ void write_new_exe(t_data *data)
       return ;
     }
     data->pt_load_inject_in->p_memsz += injection_size + 5;
-    data->elf_hdr->e_shoff += injection_size + 5;
     // printf("entry %llx injection v_addr %llx v_addr + injection size - jmp: %llx\n", data->elf_hdr->e_entry, data->new_section->sh_addr, data->new_section->sh_addr + injection_size + jump);
     data->elf_hdr->e_entry = data->new_section->sh_addr;
 
     // data->elf_hdr->e_shstrndx += injection_size + 5;
     modify_offset(data);
+    old_shdr = (Elf64_Shdr *)(data->file_start + data->elf_hdr->e_shoff);
+    data->elf_hdr->e_shoff = data->new_shdr[data->elf_hdr->e_shnum - 1].sh_offset + data->new_shdr[data->elf_hdr->e_shnum - 1].sh_size;
     // inject_code(data);
     write(fd, data->elf_hdr, sizeof(Elf64_Ehdr));
     size += sizeof(Elf64_Ehdr);
@@ -137,8 +188,8 @@ void write_new_exe(t_data *data)
       // write(fd, data->file_startnew_shdr, data->elf_hdr->e_shentsize * data->elf_hdr->e_shnum);
 
       write_padding(fd, &size, data->new_shdr[i].sh_offset);
-      if (data->new_shdr[i].sh_size && data->new_shdr[i].sh_offset + data->new_shdr[i].sh_size < data->new_section->sh_offset)
-          write(fd, data->file_start + data->new_shdr[i].sh_offset, data->new_shdr[i].sh_size);
+      // if (data->new_shdr[i].sh_size && data->new_shdr[i].sh_offset + data->new_shdr[i].sh_size < data->new_section->sh_offset)
+      write(fd, data->file_start + data->new_shdr[i].sh_offset, data->new_shdr[i].sh_size);
       size += data->new_shdr[i].sh_size;
       i++;
     }
@@ -148,8 +199,9 @@ void write_new_exe(t_data *data)
 
     write(fd, (char *)&jump, sizeof(int));
     i++;
+    // return;
     size += injection_size + 5;
-    printf("size after injection %x shoff %llx\n", size, data->elf_hdr->e_shoff);
+    // printf("size after injection %x shoff %llx\n", size, data->elf_hdr->e_shoff);
     old_shdr = data->file_start + data->elf_hdr->e_shoff - injection_size - 5;
     while (i != data->elf_hdr->e_shnum)
     {
@@ -163,7 +215,7 @@ void write_new_exe(t_data *data)
       // if (i + 1 != data->elf_hdr->e_shnum)
       i++;
     }
-    printf("size now %x\n", size);
+    // printf("size now %x\n", size);
     // write(1, (char *)&jump, sizeof(int));
     // int jump;
     // printf("%hhx\n", (char)(jump >> 8));

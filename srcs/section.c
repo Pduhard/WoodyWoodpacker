@@ -31,6 +31,7 @@ int modify_sections_header(t_data *data)
 
   i = 0;
   shdr = (Elf64_Shdr *)(data->file_start + data->elf_hdr->e_shoff);
+  printf("sh off %llx %x e_shstrndx\n ", data->elf_hdr->e_shoff, data->elf_hdr->e_shstrndx);
   str_tab = (char *)(data->file_start + shdr[data->elf_hdr->e_shstrndx].sh_offset);
   printf("e_shstrndx : %hu entry pint addr %08llx\n", data->elf_hdr->e_shstrndx, data->real_entry_point);
   if (!(new_shdr = ft_memalloc(sizeof(Elf64_Shdr) * data->elf_hdr->e_shnum + 1)))
@@ -40,6 +41,7 @@ int modify_sections_header(t_data *data)
   printf("end_off_iseg %llx\n", end_off_iseg);
   while (i < data->elf_hdr->e_shnum)
   {
+    // printf("ah %llx\n", shdr[i].sh_offset);
     // if (!strcmp(str_tab + shdr[i].sh_name, SECT_TO_ENCRYPT))
     //   data->encrypt = &(shdr[i]);
     if ((long long)(end_off_iseg - shdr[i].sh_offset - shdr[i].sh_size) >= 0)// before injection, Check for last section
