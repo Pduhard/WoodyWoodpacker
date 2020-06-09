@@ -2,7 +2,11 @@
 # define WOODY_WOODPACKER_H
 
 # include "../libft/libft.h"
-# include "elf.h"
+# if defined(__linux)
+#  include <elf.h>
+# else
+#  include "mach_elf.h"
+# endif
 # include <fcntl.h>
 # include <sys/stat.h>
 # include <sys/mman.h>
@@ -37,10 +41,10 @@ void    ft_throw_error(char *message, ...);
 int     ft_return_error(int ret, char *message, ...);
 int     ft_memalloc_error(int ret, size_t size, char *prog_name);
 int     ft_usage_error(int ret, char *usage, char *prog_name);
-
+void    ft_fatal_error(int exit_status, char *message, ...);
 int     modify_segments_header(t_data *data);
 int     modify_sections_header(t_data *data);
 
 void write_new_exe(t_data *data);
-
+void unpack();
 #endif

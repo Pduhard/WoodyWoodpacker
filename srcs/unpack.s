@@ -1,23 +1,26 @@
+[BITS 64]
 
-section .data
+global unpack:function
+global g_unpack_len:data
+global g_unpack_offset:data
+
+g_unpack_len dd end - unpack
+g_unpack_offset dd start - unpack
+
+unpack:
   woody db "....WOODY.....", 10
-  len   equ $ - woody
-
-section .text
-
+  len equ $ - woody
 start:
-  call _unpack
-  ret
-
-_unpack:
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
   mov rdi, 1
   lea rsi, [rel woody]
   mov rdx, len
   mov rax, 0x01
   syscall
-  jmp
-  ret
-
-end:
+  add rsp, 16
   pop rbp
+  jmp 0xffffffff
   ret
+end:

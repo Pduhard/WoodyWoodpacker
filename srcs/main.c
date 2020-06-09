@@ -61,7 +61,7 @@ int main(int argc, char **argv)
   if (!modify_segments_header(&data) || !modify_sections_header(&data))
     return (EXIT_FAILURE);
   write_new_exe(&data);
-  ft_throw_error("salut %d\n", 10);
-  printf("%d %s\n", argc, argv[0]);
+ // ft_throw_error("salut %d\n", 10);
+ // printf("%d %s\n", argc, argv[0]);
   return (EXIT_SUCCESS);
 }

@@ -15,11 +15,11 @@
 
 NAME		=	woody_woodpacker
 
-CC			=	gcc
-NASM		= ./nasm
-CFLAGS	= -Wall -Werror -Wextra -O3 -ffast-math -march=native -flto
+CC			=	clang
+NASM		= 	nasm
+CFLAGS	= -g -Wall -Werror -Wextra -O3 -ffast-math -march=native -flto -fPIC
 SFLAGS	=	-f elf64 -O3
-LIB_FLAGS	=	-L $(LIB_PATH) $(LIB_FLAG)
+LIB_FLAGS	=	-L$(LIB_PATH) $(LIB_FLAG)
 INC_DIR	=	./includes/
 INCLUDES	=	woody_woodpacker.h
 # OTOOL_INC_DIR	=	otool/includes/
@@ -51,7 +51,7 @@ LIB_FLAG			=	-lft
 LIB						=	libft.a
 
 BINS				=	$(addprefix $(BIN_PATH), $(BIN))
-ASM_BINS		= $(addprefix $(BIN_PATH), $(ASM_BIN))
+ASM_BINS			= $(addprefix $(BIN_PATH), $(ASM_BIN))
 LIBS				=	$(addprefix $(LIB_PATH), $(LIB))
 INCS				= $(addprefix $(INC_DIR), $(INCLUDES))
 
@@ -70,9 +70,8 @@ all: make_libft $(NAME)
 
 libft: $(LIBS)
 
-$(NAME): $(LIBS) $(BINS)
-
-	@$(CC) -I $(INC_DIR) $(CFLAGS) $(LIB_FLAGS) $^ -o $@
+$(NAME): $(LIBS) $(BINS) $(ASM_BINS)
+	@$(CC) $(CFLAGS) -o $@ $^ $(LIB_FLAGS) -I $(INC_DIR)
 	@echo "\n\n$(B)[EXECUTABLE \"$(NAME)\" READY]\n"
 
 make_libft:
